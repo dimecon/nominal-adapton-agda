@@ -1,0 +1,67 @@
+
+bool = 1 + 1               : VType 0
+list = μα.(1 + (bool x α)) : VType 0
+
+(1 + (bool x α))
+
+copy = λl. match l with
+           | Nil => Nil
+           | Cons(h,t) => Cons(h, copy t)
+
+copy = fix f. λl. match l with
+           | Nil => Nil
+           | Cons(h,t) => Cons(h, force f t)
+
+copy = fix f. λl. match l with
+           | Nil => Nil
+           | Cons(h,t) =>
+                let t' = force f t in
+                Cons(h, t')
+
+copy = fix f. λl. match (unroll l) with
+           | inj1       => roll (inj1 ())
+           | inj2 (h,t) =>
+                let t' = force f t in
+                roll (inj2 (h, t'))
+
+copy = fix f. λl. match (unroll l) with
+           | inj1       => ret (roll (inj1 ()))
+           | inj2 (h,t) =>
+                let t' = force f t in
+                ret (roll (inj2 (h, t')))
+
+copy = fix f. λl.
+       let l' = (unroll (l, l', ret l')) in
+       case l' of
+           | inj1       => ret (roll (inj1 ()))
+           | inj2 (h,t) =>
+                let t' = force f t in
+                ret (roll (inj2 (h, t')))
+
+copy  = fix f.λ l.
+        unroll(l, l',
+         case(l',
+          _ => ret l,
+          c => split(c, h.t.
+                let t' = (app (force f) t) in
+                ret (roll (inj2 (h, t')))
+             
+
+----------------------------------------------------------
+
+copy = λl. match l with
+           | Nil => Nil
+           | Cons(h,t) => Cons(h, copy t)
+
+map = λg. λl. match l with
+              | Nil => Nil
+              | Cons(h,t) => Cons(g h, copy t)
+
+map  = λg. fix f. λ l.
+        unroll(l, l',
+         case(l',
+          _ => ret l,
+          c => split(c, h.t.
+                let t' = (app (force f) t) in
+                let h' = force g h in
+                ret (roll (inj2 (h', t')))
